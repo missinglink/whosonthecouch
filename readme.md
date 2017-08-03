@@ -31,10 +31,14 @@ create a filter file which lists all the placetypes you're interested in (name i
 "wof:placetype":\s*"\(continent\|country\|dependency\|disputed\|macroregion\|region\|macrocounty\|county\|localadmin\|locality\|borough\|macrohood\|neighbourhood\)"
 ```
 
+and then just add it to the pipeline:
+
 ```bash
 function placetypeFilter {
   while IFS= read -r FILENAME; do
-    grep --files-with-match -f "${DIR}/placetype.filter" "${FILENAME}" || true;
+    grep --files-with-match -f "placetype.filter" "${FILENAME}" || true;
   done
 }
+
+find '/whosonfirst-data/data' -type f -name '*.geojson' | placetypeFilter | parallel --no-notice curl -s -XPUT "http://localhost:5984/wof/{/.}" -d "@{}"
 ```
